@@ -14,6 +14,7 @@ open class KeychainSwift {
   open var lastResultCode: OSStatus = noErr
 
   var keyPrefix = "" // Can be useful in test.
+  private var service: String?
   
   /**
 
@@ -44,10 +45,10 @@ open class KeychainSwift {
   - parameter keyPrefix: a prefix that is added before the key in get/set methods. Note that `clear` method still clears everything from the Keychain.
 
   */
-  public init(keyPrefix: String) {
+  public init(keyPrefix: String, service: String? = nil) {
     self.keyPrefix = keyPrefix
+    self.service = service
   }
-  
   /**
   
   Stores the text value in the keychain item under the given key.
@@ -102,7 +103,11 @@ open class KeychainSwift {
       KeychainSwiftConstants.valueData   : value,
       KeychainSwiftConstants.accessible  : accessible
     ]
-      
+
+    if let service = service {
+        query[KeychainSwiftConstants.attrService] = service
+    }
+
     query = addAccessGroupWhenPresent(query)
     query = addSynchronizableIfRequired(query, addingItems: true)
     lastQueryParameters = query
@@ -176,6 +181,10 @@ open class KeychainSwift {
       KeychainSwiftConstants.attrAccount : prefixedKey,
       KeychainSwiftConstants.matchLimit  : kSecMatchLimitOne
     ]
+
+    if let service = service {
+        query[KeychainSwiftConstants.attrService] = service
+    }
     
     if asReference {
       query[KeychainSwiftConstants.returnReference] = kCFBooleanTrue
@@ -280,6 +289,10 @@ open class KeychainSwift {
       KeychainSwiftConstants.klass       : kSecClassGenericPassword,
       KeychainSwiftConstants.attrAccount : prefixedKey
     ]
+
+    if let service = service {
+        query[KeychainSwiftConstants.attrService] = service
+    }
     
     query = addAccessGroupWhenPresent(query)
     query = addSynchronizableIfRequired(query, addingItems: false)
